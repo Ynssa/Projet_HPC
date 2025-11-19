@@ -7,6 +7,9 @@ heat-obj = variables.o io.o linalg.o right_hand_side.o conjugate_gradient.o fgh.
 order-bin = order
 order-obj = variables.o io.o linalg.o right_hand_side.o conjugate_gradient.o fgh.o matmul_A.o order.o
 
+# test-bin = test
+# test-obj = distribution.o test.o
+
 objects = $(sort $(heat-obj) $(order-obj))
 binaries = $(heat-bin) $(order-bin)
 
@@ -16,7 +19,7 @@ warning-flags = -Wall -Wextra -Wpedantic
 std-flags = -std=c17
 cflags = $(libflags) $(optflags) $(warning-flags) $(std-flags)
 
-cc = gcc
+cc = mpicc
 
 default: $(binaries)
 
@@ -25,6 +28,9 @@ $(heat-bin): $(heat-obj)
 
 $(order-bin): $(order-obj)
 	$(cc) $(cflags) -o $(order-bin) $(order-obj)
+
+$(test-bin): $(test-obj)
+	$(cc) $(cflags) -o $(test-bin) $(test-obj)
 
 $(objects):%.o: $(srcdir)/%.c
 	$(cc) -I $(includedir) $(cflags) -c -o $@ $<
@@ -46,3 +52,6 @@ clean_output:
 	rm output/*
 
 clean_all: clean clean_output
+
+test:
+	$(cc) -I $(includedir) -o test_dist $(srcdir)/test.c $(srcdir)/distribution.c
