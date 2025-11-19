@@ -18,6 +18,7 @@ double dt;
 int nmax;
 double eps;
 int cas;
+int rec;
 
 /* Valeurs déduites */
 

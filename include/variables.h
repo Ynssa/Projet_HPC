@@ -7,6 +7,7 @@ extern double dt;
 extern int nmax;
 extern double eps;
 extern int cas;
+extern int rec;
 
 /* Valeurs déduites */
 
