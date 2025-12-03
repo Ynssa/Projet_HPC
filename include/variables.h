@@ -8,6 +8,7 @@ extern int nmax;
 extern double eps;
 extern int cas;
 extern int rec;
+extern int iter_schwarz;
 
 /* Valeurs déduites */
 

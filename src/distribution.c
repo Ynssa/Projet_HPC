@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <stdio.h>
 
 #include "distribution.h"
 #include "variables.h"
@@ -10,7 +11,16 @@ int iBeg;
 
 int rank_prev, rank_next; // proc précédent/suivant
 
-int iRecv_prev, iRecv_next; // numéro des lignes à envoyer
+int iSend_prev, iSend_next; // numéro des lignes à envoyer
+
+void print_distribution() {
+
+  printf("rank : %d, nproc: %d\n", rank, nproc);
+  printf("Nloc: %d, Nyloc: %d\n", Nloc, Nyloc);
+  printf("iBeg: %d\n", iBeg);
+  printf("rank prev: %d, rank next: %d\n", rank_prev, rank_next);
+  printf("iSend_prev: %d, iSend_next: %d\n", iSend_prev, iSend_next);
+}
 
 int charge_taille(int me, int Ny, int np, int rec) {
   
@@ -52,7 +62,7 @@ void compute_distribution() {
     rank_prev = MPI_PROC_NULL;
   }
 
-  if (rank < np - 1) {
+  if (rank < nproc - 1) {
     rank_next = rank + 1;
   } else {
     rank_next = MPI_PROC_NULL;

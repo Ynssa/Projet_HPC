@@ -5,7 +5,9 @@ extern int iBeg;
 
 extern int rank_prev, rank_next; // proc précédent/suivant
 
-extern int iSend_prev, iSend_next;
+extern int iSend_prev, iSend_next; // numéro des lignes à envoyer
+
+void print_distribution();
 
 int charge_taille(int me, int Ny, int np, int rec);
 int charge_pos(int me, int Ny, int np, int rec);

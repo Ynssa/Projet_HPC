@@ -2,16 +2,16 @@ srcdir = src
 includedir = include
 
 heat-bin = heat
-heat-obj = variables.o io.o linalg.o right_hand_side.o conjugate_gradient.o fgh.o matmul_A.o distribution.o heat.o
+heat-obj = variables.o io.o linalg.o right_hand_side.o conjugate_gradient.o fgh.o matmul_A.o distribution.o communication.o heat.o
 
 order-bin = order
-order-obj = variables.o io.o linalg.o right_hand_side.o conjugate_gradient.o fgh.o matmul_A.o order.o
+order-obj = variables.o io.o linalg.o right_hand_side.o conjugate_gradient.o fgh.o matmul_A.o distribution.o communication.o order.o
 
-# test-bin = test
-# test-obj = distribution.o test.o
+test-bin = test
+test-obj = distribution.o communication.o variables.o test.o fgh.o
 
-objects = $(sort $(heat-obj) $(order-obj))
-binaries = $(heat-bin) $(order-bin)
+objects = $(sort $(heat-obj) $(test-obj))
+binaries = $(heat-bin) $(test-bin)
 
 libflags = -lm
 optflags = -O3
@@ -53,5 +53,5 @@ clean_output:
 
 clean_all: clean clean_output
 
-test:
-	$(cc) -I $(includedir) -o test_dist $(srcdir)/test.c $(srcdir)/distribution.c
+# test:
+# 	$(cc) -I $(includedir) -o test_dist $(srcdir)/test.c $(srcdir)/distribution.c

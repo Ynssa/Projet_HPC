@@ -4,15 +4,20 @@
 
 #include "right_hand_side.h"
 #include "variables.h"
+#include "distribution.h"
 
-double *generate_rhs(double (*f)(), double (*g)(), double (*h)(), int n,
+double *generate_rhs(double (*f)(), double (*g)(), double (*h)(), double* bottom_interface, double* top_interface, int n,
                      const double *U0, double *F) {
+  
+  for (int k = 0; k < Nloc; ++k) {
 
-  for (int k = 0; k < N; ++k) {
+    int k_glob = iBeg + k;
+    
+    int i = k_glob % Nx;
+    int j = k_glob / Nx;
 
-    int i = k % Nx;
-    int j = k / Nx;
-
+    int jloc = k / Nx;
+    
     double x = (i + 1) * dx;
     double y = (j + 1) * dy;
     double t = n * dt;
@@ -26,6 +31,9 @@ double *generate_rhs(double (*f)(), double (*g)(), double (*h)(), int n,
     int top = (j == Ny - 1);
     int bottom = (j == 0);
 
+    int top_inter = (!top) && (jloc == Nyloc - 1);
+    int bottom_inter = (!bottom) && (jloc == 0);
+    
     if (left)
       F[k] -= beta * h(x - dx, y, t);
     if (right)
@@ -34,6 +42,10 @@ double *generate_rhs(double (*f)(), double (*g)(), double (*h)(), int n,
       F[k] -= gmma * g(x, y + dy, t);
     if (bottom)
       F[k] -= gmma * g(x, y - dy, t);
+    if (top_inter)
+      F[k] -= gmma * top_interface[i];
+    if (bottom_inter)
+      F[k] -= gmma * bottom_interface[i];
   }
 
   return F;
