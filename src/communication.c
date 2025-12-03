@@ -8,7 +8,6 @@
 
 void communicate_interfaces(double* Uloc, double* bottom_interface, double* top_interface) {
 
-  /* printf("communicating interfaces\n"); */
   if (rank % 2 == 0) {
     MPI_Send(&Uloc[iSend_next], Nx, MPI_DOUBLE, rank_next, 0, MPI_COMM_WORLD);
     MPI_Recv(top_interface, Nx, MPI_DOUBLE, rank_next, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -20,5 +19,4 @@ void communicate_interfaces(double* Uloc, double* bottom_interface, double* top_
     MPI_Send(&Uloc[iSend_next], Nx, MPI_DOUBLE, rank_next, 0, MPI_COMM_WORLD);
     MPI_Recv(top_interface, Nx, MPI_DOUBLE, rank_next, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
-  /* printf("ended communications\n"); */
 }
