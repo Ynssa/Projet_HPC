@@ -47,17 +47,14 @@ int main(int argc, char *argv[]) {
 
   compute_values();
 
-  if (rank == 0)
-    printf("constants: %lf %lf %lf\n", alpha, beta, gmma);
   /* Distribution des charges */
 
   MPI_Init(&argc, &argv);
   
   compute_distribution();
 
-  print_distribution();
+  /* print_distribution(); */
   
-  /* printf("N: %d, Nloc : %d\n", N, Nloc); */
   /* Calcul de la solution approchée */
 
   double *U =
@@ -82,14 +79,11 @@ int main(int argc, char *argv[]) {
 
   copy(U, zeros); // Initialisation
 
-  printf("[%d]: Uloc's norm: %lf\n", rank, norm(U));
   for (int n = 1; n <= nmax; ++n) {
     for (int k = 1; k <= iter_schwarz; ++k) {
-      /* printf("schwarz iteration %d\n", k); */
       communicate_interfaces(U, bottom_interface, top_interface);
       F = generate_rhs(f, g, h, bottom_interface, top_interface, n, U, F);   // Calcul du second membre F
       U = conjugate_gradient(F, U, eps, U); // Résolution du système AU = F
-      printf("[%d, k=%d, n=%d]: Uloc's norm: %lf\n", rank, k, n, norm(U));
     }
   }
 
@@ -133,6 +127,7 @@ int main(int argc, char *argv[]) {
   /*   free(solv); */
   /*   free(diff); */
   /* } */
+  
   MPI_Finalize();
   free(U);
   free(zeros);
