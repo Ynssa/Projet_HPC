@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
   
   compute_distribution();
 
-  /* print_distribution(); */
+  print_distribution();
   
   /* Calcul de la solution approchée */
 
