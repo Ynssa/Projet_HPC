@@ -19,6 +19,7 @@ int nmax;
 double eps;
 int cas;
 int rec;
+int iter_schwarz;
 
 /* Valeurs déduites */
 

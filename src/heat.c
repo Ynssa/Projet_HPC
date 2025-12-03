@@ -8,9 +8,13 @@
 #include "linalg.h"
 #include "right_hand_side.h"
 #include "variables.h"
+#include "distribution.h"
+#include "communication.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <mpi.h>
 
 int main(int argc, char *argv[]) {
 
@@ -43,66 +47,96 @@ int main(int argc, char *argv[]) {
 
   compute_values();
 
+  if (rank == 0)
+    printf("constants: %lf %lf %lf\n", alpha, beta, gmma);
+  /* Distribution des charges */
+
+  MPI_Init(&argc, &argv);
+  
+  compute_distribution();
+
+  print_distribution();
+  
+  /* printf("N: %d, Nloc : %d\n", N, Nloc); */
   /* Calcul de la solution approchée */
 
   double *U =
-      malloc(N * sizeof(double)); // Vecteur contenant la solution approchée
+      malloc(Nloc * sizeof(double)); // Vecteur contenant la solution approchée
 
-  double *zeros = malloc(
-      N * sizeof(double)); // Pour l'initialisation de la descente de gradient
-  for (int k = 0; k < N; ++k)
+  double *bottom_interface = NULL;
+  double *top_interface = NULL;
+  
+  bottom_interface = malloc(Nx*sizeof(double));
+  top_interface = malloc(Nx*sizeof(double));
+
+  for (int i = 0; i < Nx; ++i) {
+    bottom_interface[i] = 0;
+    top_interface[i] = 0;
+  }
+  
+  double *zeros = malloc(Nloc * sizeof(double)); // Pour l'initialisation de la descente de gradient
+  for (int k = 0; k < Nloc; ++k)
     zeros[k] = 0;
-
-  double *F = malloc(N * sizeof(double)); // Second membre
+  
+  double *F = malloc(Nloc * sizeof(double)); // Second membre
 
   copy(U, zeros); // Initialisation
 
+  printf("[%d]: Uloc's norm: %lf\n", rank, norm(U));
   for (int n = 1; n <= nmax; ++n) {
-    F = generate_rhs(f, g, h, n, U, F);   // Calcul du second membre F
-    U = conjugate_gradient(F, U, eps, U); // Résolution du système AU = F
+    for (int k = 1; k <= iter_schwarz; ++k) {
+      /* printf("schwarz iteration %d\n", k); */
+      communicate_interfaces(U, bottom_interface, top_interface);
+      F = generate_rhs(f, g, h, bottom_interface, top_interface, n, U, F);   // Calcul du second membre F
+      U = conjugate_gradient(F, U, eps, U); // Résolution du système AU = F
+      printf("[%d, k=%d, n=%d]: Uloc's norm: %lf\n", rank, k, n, norm(U));
+    }
   }
 
   /* Écriture de la solution approchée dans le fichier de sortie */
 
   char *ofilename = argv[2];
-
-  FILE *ofile = fopen(ofilename, "w");
-
+  char *ofilename_ext = malloc((strlen(ofilename)+4+4+1)*sizeof(char));
+  sprintf(ofilename_ext, "%s.%d.%d", ofilename, nproc, rank);
+  FILE *ofile = fopen(ofilename_ext, "w");
+  
   write_vec(U, ofile);
 
   fclose(ofile);
 
   /* Calcul de l'erreur en norme L2 si il existe une solution exacte */
 
-  if (sol != NULL) {
+  /* if (sol != NULL) { */
 
-    double *solv =
-        malloc(N * sizeof(double)); // Contient les valeurs de la solution aux
-                                    // noeuds du maillage
+  /*   double *solv = */
+  /*       malloc(N * sizeof(double)); // Contient les valeurs de la solution aux */
+  /*                                   // noeuds du maillage */
 
-    for (int k = 0; k < N; ++k) {
+  /*   for (int k = 0; k < N; ++k) { */
 
-      int i = k % Nx;
-      int j = k / Nx;
+  /*     int i = k % Nx; */
+  /*     int j = k / Nx; */
 
-      double x = (i + 1) * dx;
-      double y = (j + 1) * dy;
+  /*     double x = (i + 1) * dx; */
+  /*     double y = (j + 1) * dy; */
 
-      solv[k] = sol(x, y, 0);
-    }
+  /*     solv[k] = sol(x, y, 0); */
+  /*   } */
 
-    double *diff = malloc(N * sizeof(double));
-    sub(diff, U, solv);
+  /*   double *diff = malloc(N * sizeof(double)); */
+  /*   sub(diff, U, solv); */
 
-    double err = norm(diff) / N;
+  /*   double err = norm(diff) / N; */
 
-    printf("Erreur en norme L2 : %le\n", err);
+  /*   printf("Erreur en norme L2 : %le\n", err); */
 
-    free(solv);
-    free(diff);
-  }
-
+  /*   free(solv); */
+  /*   free(diff); */
+  /* } */
+  MPI_Finalize();
   free(U);
   free(zeros);
   free(F);
+  free(bottom_interface);
+  free(top_interface);
 }
