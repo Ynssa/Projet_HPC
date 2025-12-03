@@ -1,2 +1,2 @@
-25 10 1.0 1.0 1.0 0.1 50 25 1.0E-6 2 2
+25 10 1.0 1.0 1.0 0.1 50 25 1.0E-6 2 1
 # Nx, Ny, Lx, Ly, D, dt, nmax, iter_schwarz, eps, cas, rec

@@ -20,6 +20,7 @@ std-flags = -std=c17
 cflags = $(libflags) $(optflags) $(warning-flags) $(std-flags)
 
 cc = mpicc
+# cc = /opt/openmpi/bin/mpicc
 
 default: $(binaries)
 
